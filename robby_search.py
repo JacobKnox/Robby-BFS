@@ -107,11 +107,35 @@ def main(file: str, actions: str, battery: int, verbose: bool):
                         rw.grab()
 
 
-def bfs(rw: World, state: str, actions: str, verbose=False) -> str:
+def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     '''Perform breadth-first search on the world state given an ordered string of actions to check (e.g. 'GNESW').'''
     # ***EDIT CODE HERE***
     cnt = 0  # counter to see how long the search took
     path = ''
+    row, col = rw.getCurrentPosition()  # Robby's current (starting) position
+    rows, cols = rw.numRows, rw.numCols
+
+    visited = []
+    backpointers = {
+        (row, col, state): ()
+    }
+    queue = Queue()
+    queue.put((row, col, state))
+
+    while True:
+        if queue.empty():
+            path = ''
+            break
+
+        node = queue.get()
+
+        # for action in actions:
+        #     pdb.set_trace()
+        #     if (isvalid(rw, state, path + action)):
+        #         queue.put(action)
+        # if queue.empty() or issolved(rw, state, path):
+        #     break
+        # path += queue.get()
 
     if verbose:
         print('--> searched {} paths'.format(cnt))
@@ -122,6 +146,7 @@ def bfs(rw: World, state: str, actions: str, verbose=False) -> str:
 def issolved(rw: World, state: str, path: str) -> bool:
     '''Check whether a series of actions (path) taken in Robby's world results in a solved problem.'''
     row, col = rw.getCurrentPosition()  # Robby's current (starting) position
+    rows, cols = rw.numRows, rw.numCols
     state = list(state)  # convert the string to a list so we can update it
 
     if not isvalid(rw, state, path):
@@ -138,7 +163,7 @@ def issolved(rw: World, state: str, path: str) -> bool:
         elif action == "W":
             col -= 1
         elif action == "G":
-            state[row][col] = "E"
+            state[row * cols + col] = "E"
 
         # Did Robby grab all the cans?
         if state.count("C") == 0:
@@ -160,19 +185,19 @@ def isvalid(rw: World, state: str, path: str) -> bool:
         battery -= 1
 
         if action == "N":
-            row += 1
-        elif action == "S":
             row -= 1
+        elif action == "S":
+            row += 1
         elif action == "E":
             col += 1
         elif action == "W":
             col -= 1
         elif action == "G":
-            item = state[row][col]
+            item = state[row * cols + col]
             if item == "B":
                 battery = rw.fullBattery
             if item != 'W':
-                state[row][col] = "E"
+                state[row * cols + col] = "E"
 
         # Path is invalid if Robby has run out of battery
         if battery <= 0:  # ***EDIT CODE HERE***
@@ -183,7 +208,7 @@ def isvalid(rw: World, state: str, path: str) -> bool:
             return False
 
         # Path is invalid if Robby runs into a wall
-        if state[row][col] == 'W':  # ***EDIT CODE HERE***
+        if state[row * cols + col] == 'W':  # ***EDIT CODE HERE***
             return False
 
         # Path is invalid if robby repeats a state in memory
