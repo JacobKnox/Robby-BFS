@@ -128,6 +128,22 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
             break
 
         node = queue.get()
+        cnt += 1
+        visited.append(node)
+        for action in actions:
+            if (isvalid(rw, node[2], action)):
+                if action == 'N':
+                    queue.put((node[0] - 1, node[1], state))
+                elif action == 'E':
+                    queue.put((node[0], node[1] + 1, state))
+                elif action == 'S':
+                    queue.put((node[0] + 1, node[1], state))
+                elif action == 'W':
+                    queue.put((node[0], node[1] - 1, state))
+                elif action == 'G':
+                    new_state = node[2]
+                    new_state[node[0] * cols + node[1]] = 'E'
+                    queue.put((node[0], node[1], new_state))
 
         # for action in actions:
         #     pdb.set_trace()
