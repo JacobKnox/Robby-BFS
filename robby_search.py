@@ -48,7 +48,7 @@ def main(file: str, actions: str, battery: int, verbose: bool):
     rw.load(contents)
     rw.goto(r0, c0)
     rw.setFullBattery(battery)
-    
+
     # Play in Robby's world
     path = ''
     while True:
@@ -112,13 +112,13 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     '''Perform breadth-first search on the world state given an ordered string of actions to check (e.g. 'GNESW').'''
     # ***EDIT CODE HERE***
     cnt = 0  # counter to see how long the search took
-    tempPath = '' # The string of actions to check if valid or solved
-    finalPath = '' # The path that will be built once we solve the problem
+    tempPath = ''  # The string of actions to check if valid or solved
+    finalPath = ''  # The path that will be built once we solve the problem
     row, col = rw.getCurrentPosition()  # Robby's current (starting) position
-    rows, cols = rw.numRows, rw.numCols # Number of rows and columns in the world
+    rows, cols = rw.numRows, rw.numCols  # Number of rows and columns in the world
 
     visited = []  # Initialize the list of visited nodes
-    
+
     # Initialize backpointers
     backpointers = {
         (row, col, state): None
@@ -127,7 +127,7 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     queue = Queue()  # Initialize the queue
 
     # Add starting node to queue and visited nodes
-    queue.put((row, col, state)) 
+    queue.put((row, col, state))
     visited.append((row, col, state))
 
     while True:
@@ -138,7 +138,7 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
 
         node = queue.get()      # Pop the first node from the queue
         cnt += 1                # Increase our search length count
-            
+
         # If the node contains the goal state then return the solution
         if issolved(rw, state, path):
             break
@@ -147,7 +147,7 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
         for action in actions:
             child = ()
             # if (isvalid(rw, node[2], action)):
-                # pdb.set_trace()
+            # pdb.set_trace()
             # Determine the child node for the given action
             print(f'\nCurrent position: ({node[0]}, {node[1]})')
             if action == 'N':
@@ -161,26 +161,27 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
             elif action == 'G':
                 new_state = node[2]
                 position = node[0] * cols + node[1]
-                new_state = new_state[:position] + 'E' + new_state[(position + 1):]
+                new_state = new_state[:position] + \
+                    'E' + new_state[(position + 1):]
                 child = (node[0], node[1], new_state)
 
             # If the move to this child node is not a valid move, move on
             if not isvalid(rw, state, path + action):
-                continue # Move on to the next possible action
-            
-            # If the child has not been visited 
+                continue  # Move on to the next possible action
+
+            # If the child has not been visited
             if child not in visited:
-                queue.put(child) # Add child to queue
-                visited.append(child) # Add child to visited nodes
-                backpointers[child] = node # Add parent node as backpointer to child
-            
-                # # Build the path 
+                queue.put(child)  # Add child to queue
+                visited.append(child)  # Add child to visited nodes
+                # Add parent node as backpointer to child
+                backpointers[child] = node
+
+                # # Build the path
                 # pathNode = node
                 # while pathNode is not None:
                 #     path.insert(0, pathNode)
                 #     pathNode = backpointers[pathNode]
                 # path = "".join(path)
-                
 
         # for action in actions:
         #     pdb.set_trace()
@@ -218,9 +219,9 @@ def issolved(rw: World, state: str, path: str) -> bool:
         elif action == "G":
             state[row * cols + col] = "E"
 
-        # Did Robby grab all the cans?
-        if state.count("C") == 0:
-            return True
+    # Did Robby grab all the cans?
+    if state.count("C") == 0:
+        return True
 
     return False  # if we made it this far, we did not complete the goal
 
@@ -249,10 +250,11 @@ def isvalid(rw: World, state: str, path: str) -> bool:
             col -= 1
         elif action == "G":
             item = state[row * cols + col]
+            if item == "E" or item == "W":
+                return False
             if item == "B":
                 battery = rw.fullBattery
-            if item != 'W':
-                state[row * cols + col] = "E"
+            state[row * cols + col] = "E"
         pdb.set_trace()
         # Path is invalid if Robby has run out of battery
         if battery <= 0:  # ***EDIT CODE HERE***
