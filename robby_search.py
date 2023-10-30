@@ -111,6 +111,7 @@ def main(file: str, actions: str, battery: int, verbose: bool):
 def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     '''Perform breadth-first search on the world state given an ordered string of actions to check (e.g. 'GNESW').'''
     # ***EDIT CODE HERE***
+    path = ''
     cnt = 0  # counter to see how long the search took
     row, col = rw.getCurrentPosition()  # Robby's current (starting) position
     rows, cols = rw.numRows, rw.numCols  # Number of rows and columns in the world
@@ -123,11 +124,7 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     queue.put(('', row, col, state))
     visited.append((row, col, state))
 
-    while True:
-        # If there are no nodes for expansion then failure
-        if queue.empty():
-            break
-
+    while not queue.empty():
         node = queue.get()      # Pop the first node from the queue
         if verbose:
             print(f"Exploring paths from {node[0]}...")
@@ -137,7 +134,8 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
 
         # If the node contains the goal state then return the solution
         if issolved(rw, state, temp_path):
-            return temp_path
+            path = temp_path
+            break
 
         # For each available action
         for action in actions:
@@ -165,7 +163,7 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     if verbose:
         print('--> searched {} paths'.format(cnt))
 
-    return ''
+    return path
 
 
 def issolved(rw: World, state: str, path: str) -> bool:
@@ -180,20 +178,15 @@ def issolved(rw: World, state: str, path: str) -> bool:
     # ***EDIT CODE HERE***
     for action in path:
         if action == "N":
-            row += 1
-        elif action == "S":
             row -= 1
+        elif action == "S":
+            row += 1
         elif action == "E":
             col += 1
         elif action == "W":
             col -= 1
         elif action == "G":
-            # pdb.set_trace()
-            # print(f"Row: {row}, Col: {col}, Cols: {cols}")
             state[row * cols + col] = "E"
-        # Path is invalid if Robby's goes "out of bounds"
-        if row < 0 or row >= rows or col < 0 or col >= cols:  # ***EDIT CODE HERE***
-            return False
 
     # Did Robby grab all the cans?
     if state.count("C") == 0:
