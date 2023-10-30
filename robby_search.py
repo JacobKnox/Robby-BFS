@@ -18,7 +18,8 @@ parser = argparse.ArgumentParser(
     description="Use breadth-first search (BFS) to help Robby the Robot pick up cans without running out of battery")
 # ***EDIT CODE HERE***
 parser.add_argument('-f', '--file',
-                    help="Path to a text file containing the world design")
+                    help="Path to a text file containing the world design",
+                    required=True)
 parser.add_argument('-a', '--actions',
                     help="String defining the order of actions to search (default: 'GNESW')",
                     default="GNESW")
@@ -47,7 +48,7 @@ def main(file: str, actions: str, battery: int, verbose: bool):
     rw.load(contents)
     rw.goto(r0, c0)
     rw.setFullBattery(battery)
-
+    
     # Play in Robby's world
     path = ''
     while True:
@@ -111,39 +112,60 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     '''Perform breadth-first search on the world state given an ordered string of actions to check (e.g. 'GNESW').'''
     # ***EDIT CODE HERE***
     cnt = 0  # counter to see how long the search took
-    path = ''
+    path = '' # The path that Robby will take
     row, col = rw.getCurrentPosition()  # Robby's current (starting) position
-    rows, cols = rw.numRows, rw.numCols
+    rows, cols = rw.numRows, rw.numCols # Number of rows and columns in the world
 
-    visited = []
+    visited = []  # Initialize the list of visited nodes
+    
+    # Initialize backpointers
     backpointers = {
         (row, col, state): ()
     }
-    queue = Queue()
-    queue.put((row, col, state))
+
+    queue = Queue()  # Initialize the queue
+
+    # Add starting node to queue and visited nodes
+    queue.put((row, col, state)) 
+    visited.append((row, col, state))
 
     while True:
+        # If there are no nodes for expansion then failure
         if queue.empty():
             path = ''
             break
 
-        node = queue.get()
-        cnt += 1
-        visited.append(node)
+        node = queue.get()      # Pop the first node from the queue
+        cnt += 1                # Increase our search length count
+            
+        # If the node contains the goal state then return the solution
+        
+
+        # For each available action
         for action in actions:
+            child = ()
             if (isvalid(rw, node[2], action)):
+                # Determine the child node for the given action
+                print(f'\nCurrent position: ({node[0]}, {node[1]})')
                 if action == 'N':
-                    queue.put((node[0] - 1, node[1], state))
+                    child = (node[0] - 1, node[1], state)
                 elif action == 'E':
-                    queue.put((node[0], node[1] + 1, state))
+                    child = (node[0], node[1] + 1, state)
                 elif action == 'S':
-                    queue.put((node[0] + 1, node[1], state))
+                    child = (node[0] + 1, node[1], state)
                 elif action == 'W':
-                    queue.put((node[0], node[1] - 1, state))
+                    child = (node[0], node[1] - 1, state)
                 elif action == 'G':
                     new_state = node[2]
-                    new_state[node[0] * cols + node[1]] = 'E'
-                    queue.put((node[0], node[1], new_state))
+                    position = node[0] * cols + node[1]
+                    new_state = new_state[:position] + 'E' + new_state[(position + 1):]
+                    child = (node[0], node[1], new_state)
+                
+                # If the child has not been visited
+                if child not in visited:
+                    queue.put(child) # Add child to queue
+                    visited.append(child) # Add child to visited nodes
+                    backpointers[child] = node # Add parent node as backpointer to child
 
         # for action in actions:
         #     pdb.set_trace()
