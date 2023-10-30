@@ -112,7 +112,7 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     '''Perform breadth-first search on the world state given an ordered string of actions to check (e.g. 'GNESW').'''
     # ***EDIT CODE HERE***
     cnt = 0  # counter to see how long the search took
-    path = '' # The path that Robby will take
+    path = [] # The path that Robby will take
     row, col = rw.getCurrentPosition()  # Robby's current (starting) position
     rows, cols = rw.numRows, rw.numCols # Number of rows and columns in the world
 
@@ -120,7 +120,7 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     
     # Initialize backpointers
     backpointers = {
-        (row, col, state): ()
+        (row, col, state): None
     }
 
     queue = Queue()  # Initialize the queue
@@ -139,7 +139,10 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
         cnt += 1                # Increase our search length count
             
         # If the node contains the goal state then return the solution
-        
+        if issolved(rw, state, path):
+            break
+
+        path = []
 
         # For each available action
         for action in actions:
@@ -166,6 +169,12 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
                     queue.put(child) # Add child to queue
                     visited.append(child) # Add child to visited nodes
                     backpointers[child] = node # Add parent node as backpointer to child
+                
+                # Build the path to check if it is a solution in the next iteration
+                pathNode = node
+                while pathNode is not None:
+                    path.insert(0, pathNode)
+                    pathNode = backpointers[pathNode]
 
         # for action in actions:
         #     pdb.set_trace()
