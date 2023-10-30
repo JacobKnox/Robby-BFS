@@ -112,7 +112,6 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     '''Perform breadth-first search on the world state given an ordered string of actions to check (e.g. 'GNESW').'''
     # ***EDIT CODE HERE***
     cnt = 0  # counter to see how long the search took
-    path = ''  # The string of actions to check if valid or solved
     row, col = rw.getCurrentPosition()  # Robby's current (starting) position
     rows, cols = rw.numRows, rw.numCols  # Number of rows and columns in the world
 
@@ -121,24 +120,24 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     queue = Queue()  # Initialize the queue
 
     # Add starting node to queue and visited nodes
-    queue.put(("", row, col, state))
-    visited.append(("", row, col, state))
+    queue.put(('', row, col, state))
+    visited.append((row, col, state))
 
     while True:
         # If there are no nodes for expansion then failure
         if queue.empty():
-            path = ''
             break
 
         node = queue.get()      # Pop the first node from the queue
-        visited.append(node)
+        if verbose:
+            print(f"Exploring paths from {node[0]}...")
+        visited.append((node[1], node[2], node[3]))
         cnt += 1                # Increase our search length count
         temp_path = node[0]
 
         # If the node contains the goal state then return the solution
         if issolved(rw, state, temp_path):
-            path = temp_path
-            break
+            return temp_path
 
         # For each available action
         for action in actions:
@@ -155,18 +154,18 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
                 elif action == 'W':
                     child = (temp_path + action, node[1], node[2] - 1, state)
                 elif action == 'G':
-                    new_state = node[3]
+                    new_state = list(node[3])
                     position = node[1] * cols + node[2]
-                    new_state = new_state[:position] + \
-                        'E' + new_state[(position + 1):]
-                    child = (temp_path + action, node[1], node[2], new_state)
+                    new_state[position] = "E"
+                    child = (temp_path + action,
+                             node[1], node[2], "".join(new_state))
                 if child not in visited:
                     queue.put(child)
 
     if verbose:
         print('--> searched {} paths'.format(cnt))
 
-    return path
+    return ''
 
 
 def issolved(rw: World, state: str, path: str) -> bool:
@@ -175,7 +174,7 @@ def issolved(rw: World, state: str, path: str) -> bool:
     rows, cols = rw.numRows, rw.numCols
     state = list(state)  # convert the string to a list so we can update it
 
-    if not isvalid(rw, state, path):
+    if not isvalid(rw, "".join(state), path):
         return False
 
     # ***EDIT CODE HERE***
@@ -192,6 +191,7 @@ def issolved(rw: World, state: str, path: str) -> bool:
             # pdb.set_trace()
             # print(f"Row: {row}, Col: {col}, Cols: {cols}")
             state[row * cols + col] = "E"
+        # Path is invalid if Robby's goes "out of bounds"
         if row < 0 or row >= rows or col < 0 or col >= cols:  # ***EDIT CODE HERE***
             return False
 
@@ -215,7 +215,8 @@ def isvalid(rw: World, state: str, path: str) -> bool:
     # ***EDIT CODE HERE***
     for action in path:
         battery -= 1
-
+        if state[row * cols + col] == 'C' and action != 'G':
+            return False
         if action == "N":
             row -= 1
         elif action == "S":
