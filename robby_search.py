@@ -15,31 +15,41 @@ import time
 #   *battery - an integer defining the full battery power (optional, default=7)
 #   *verbose - a flag to display details about the search
 parser = argparse.ArgumentParser(
-    description="Use breadth-first search (BFS) to help Robby the Robot pick up cans without running out of battery")
+    description="Use breadth-first search (BFS) to help Robby the Robot pick up cans without running out of battery"
+)
 # ***EDIT CODE HERE***
-parser.add_argument('-f', '--file',
-                    help="Path to a text file containing the world design",
-                    required=True)
-parser.add_argument('-a', '--actions',
-                    help="String defining the order of actions to search (default: 'GNESW')",
-                    default="GNESW")
-parser.add_argument('-b', '--battery',
-                    help="Integer defining the full battery power",
-                    default=7,
-                    type=int)
-parser.add_argument('-v', '--verbose',
-                    help="Flag to display details about the search",
-                    default=False,
-                    action=argparse.BooleanOptionalAction)
+parser.add_argument(
+    "file",
+    help="Path to a text file containing the world design",
+)
+parser.add_argument(
+    "-a",
+    "--actions",
+    help="String defining the order of actions to search (default: 'GNESW')",
+    default="GNESW",
+)
+parser.add_argument(
+    "-b",
+    "--battery",
+    help="Integer defining the full battery power",
+    default=7,
+    type=int,
+)
+parser.add_argument(
+    "-v",
+    "--verbose",
+    help="Flag to display details about the search",
+    action="store_true",
+)
 
 
 def main(file: str, actions: str, battery: int, verbose: bool):
     # Read world parameters (size, location of Robby, and contents) from file
     # ***EDIT CODE HERE***
-    lines = open(file, 'r').readlines()
-    rows, cols = [int(char) for char in lines[0].strip().split(' ')]
-    r0, c0 = [int(char) for char in lines[1].strip().split(' ')]
-    contents = ''.join([line.strip() for line in lines[2:]]).replace('.', 'E')
+    lines = open(file, "r").readlines()
+    rows, cols = [int(char) for char in lines[0].strip().split(" ")]
+    r0, c0 = [int(char) for char in lines[1].strip().split(" ")]
+    contents = "".join([line.strip() for line in lines[2:]]).replace(".", "E")
 
     # Create Robby's world
     # ***EDIT CODE HERE***
@@ -50,7 +60,7 @@ def main(file: str, actions: str, battery: int, verbose: bool):
     rw.setFullBattery(battery)
 
     # Play in Robby's world
-    path = ''
+    path = ""
     while True:
         # Check to see if Robby has picked up all the cans
         if rw.getCansRemaining() <= 0:  # ***EDIT CODE HERE***
@@ -80,7 +90,7 @@ def main(file: str, actions: str, battery: int, verbose: bool):
             elif key == "s":  # display the current world at the command line
                 rw.show()
             elif key == "b":  # BFS
-                print('Running breadth-first search...', end='')
+                print("Running breadth-first search...", end="")
                 time.sleep(0.5)
                 path = bfs(rw, contents, actions, verbose=verbose)
                 if len(path) > 0:
@@ -96,6 +106,7 @@ def main(file: str, actions: str, battery: int, verbose: bool):
 
                 # ***EDIT CODE HERE***
                 for action in path:
+                    time.sleep(0.5)
                     if action == "N":
                         rw.north()
                     elif action == "S":
@@ -109,9 +120,9 @@ def main(file: str, actions: str, battery: int, verbose: bool):
 
 
 def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
-    '''Perform breadth-first search on the world state given an ordered string of actions to check (e.g. 'GNESW').'''
+    """Perform breadth-first search on the world state given an ordered string of actions to check (e.g. 'GNESW')."""
     # ***EDIT CODE HERE***
-    path = ''
+    path = ""
     cnt = 0  # counter to see how long the search took
     row, col = rw.getCurrentPosition()  # Robby's current (starting) position
     rows, cols = rw.numRows, rw.numCols  # Number of rows and columns in the world
@@ -121,15 +132,15 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
     queue = Queue()  # Initialize the queue
 
     # Add starting node to queue and visited nodes
-    queue.put(('', row, col, state))
+    queue.put(("", row, col, state))
     visited.append((row, col, state))
 
     while not queue.empty():
-        node = queue.get()      # Pop the first node from the queue
+        node = queue.get()  # Pop the first node from the queue
         if verbose:
             print(f"Exploring paths from {node[0]}...")
         visited.append((node[1], node[2], node[3]))
-        cnt += 1                # Increase our search length count
+        cnt += 1  # Increase our search length count
         temp_path = node[0]
 
         # If the node contains the goal state then return the solution
@@ -143,31 +154,30 @@ def bfs(rw: World, state: str, actions: str, verbose: bool = False) -> str:
             # print(f'\nCurrent position: ({node[1]}, {node[2]})')
             if isvalid(rw, state, temp_path + action):
                 child = ()
-                if action == 'N':
+                if action == "N":
                     child = (temp_path + action, node[1] - 1, node[2], state)
-                elif action == 'E':
+                elif action == "E":
                     child = (temp_path + action, node[1], node[2] + 1, state)
-                elif action == 'S':
+                elif action == "S":
                     child = (temp_path + action, node[1] + 1, node[2], state)
-                elif action == 'W':
+                elif action == "W":
                     child = (temp_path + action, node[1], node[2] - 1, state)
-                elif action == 'G':
+                elif action == "G":
                     new_state = list(node[3])
                     position = node[1] * cols + node[2]
                     new_state[position] = "E"
-                    child = (temp_path + action,
-                             node[1], node[2], "".join(new_state))
+                    child = (temp_path + action, node[1], node[2], "".join(new_state))
                 if child not in visited:
                     queue.put(child)
 
     if verbose:
-        print('--> searched {} paths'.format(cnt))
+        print("--> searched {} paths".format(cnt))
 
     return path
 
 
 def issolved(rw: World, state: str, path: str) -> bool:
-    '''Check whether a series of actions (path) taken in Robby's world results in a solved problem.'''
+    """Check whether a series of actions (path) taken in Robby's world results in a solved problem."""
     row, col = rw.getCurrentPosition()  # Robby's current (starting) position
     rows, cols = rw.numRows, rw.numCols
     state = list(state)  # convert the string to a list so we can update it
@@ -196,7 +206,7 @@ def issolved(rw: World, state: str, path: str) -> bool:
 
 
 def isvalid(rw: World, state: str, path: str) -> bool:
-    '''Check whether a series of actions (path) taken in Robby's world is valid.'''
+    """Check whether a series of actions (path) taken in Robby's world is valid."""
     rows, cols = rw.numRows, rw.numCols  # size of the maze
 
     # It's getting the starting position from the very beginning and not from where Robby is currently
@@ -208,7 +218,7 @@ def isvalid(rw: World, state: str, path: str) -> bool:
     # ***EDIT CODE HERE***
     for action in path:
         battery -= 1
-        if state[row * cols + col] == 'C' and action != 'G':
+        if state[row * cols + col] == "C" and action != "G":
             return False
         if action == "N":
             row -= 1
@@ -235,7 +245,7 @@ def isvalid(rw: World, state: str, path: str) -> bool:
             return False
 
         # Path is invalid if Robby runs into a wall
-        if state[row * cols + col] == 'W':  # ***EDIT CODE HERE***
+        if state[row * cols + col] == "W":  # ***EDIT CODE HERE***
             return False
 
         # Path is invalid if robby repeats a state in memory
@@ -247,6 +257,6 @@ def isvalid(rw: World, state: str, path: str) -> bool:
     return True  # if we made it this far, the path is valid
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parser.parse_args()
     main(args.file, args.actions, args.battery, args.verbose)
