@@ -1,2 +1,2 @@
-# Homework-2
-Code for AI 1 Homework 2
+# Breadth First Search with Robby
+Our solution to Homework 2 for Introduction to Artificial Intelligence. Given starter code and instructions (csc3520_hw2_f23.pdf), robby_search.py implements breadth first search to solve mazes like world0.txt.
